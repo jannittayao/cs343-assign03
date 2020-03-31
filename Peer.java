@@ -63,10 +63,14 @@ public class Peer implements PeerInterface {
       // The actual transfers are done based on user commands
       // This is to slow down the execution a bit, to give you enough time to start up all other peers before making a transaction
       Scanner in = new Scanner(System.in);
-      System.err.println("Press enter to make a transaction, and q to quit");
-      String theInput = in. nextLine();
+      System.err.println("Press enter to make a transaction, q to quit, and snap to take a snapshot");
+      String theInput = in.nextLine();
       while(!theInput.equals("q")){
         // Pick a peer at random
+        if (theInput.equals("snap")){
+          // take a snapshot 
+        }
+        else{
         int randIndex = theRandNumber.nextInt(allPeerIPs.length);
         // Make sure that it's not the same node
         if(randIndex == obj.peerID)
@@ -80,6 +84,8 @@ public class Peer implements PeerInterface {
         ExecutorService pool = Executors.newFixedThreadPool(10);
         pool.execute(new TransferTransaction(obj, theIP, amount));
 
+        }
+     
         theInput = in. nextLine();
       }
     } catch (Exception e) {
