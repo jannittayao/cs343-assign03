@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 // This is the main Peer class, which contains all the logic for an independent VM
 public class Peer implements PeerInterface {
   // [IMPORTANT] You must add the list of VM IPs before running the code
-  static String[] allPeerIPs = new String[]{};
+  static String[] allPeerIPs = new String[]{"34.201.107.71", "34.226.203.75", "34.201.252.42"};
   // Starts with 0, and is mainly used to ensure that the node doesn't send money to itself
   private int peerID;
   // The total amount of money in the peer's account
@@ -65,12 +65,14 @@ public class Peer implements PeerInterface {
       Scanner in = new Scanner(System.in);
       System.err.println("Press enter to make a transaction, q to quit, and snap to take a snapshot");
       String theInput = in.nextLine();
+
       while(!theInput.equals("q")){
-        // Pick a peer at random
+
         if (theInput.equals("snap")){
           // take a snapshot
         }
         else{
+        // Pick a peer at random
         int randIndex = theRandNumber.nextInt(allPeerIPs.length);
         // Make sure that it's not the same node
         if(randIndex == obj.peerID)
@@ -89,7 +91,9 @@ public class Peer implements PeerInterface {
         theInput = in.nextLine();
       }
 
-      in.close(); //closes scanner once user enters 'q'
+      System.exit(0);
+
+
 
     } catch (Exception e) {
         System.err.println("Peer exception: " + e.toString());
