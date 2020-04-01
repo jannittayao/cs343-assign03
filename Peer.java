@@ -13,10 +13,20 @@ public class Peer implements PeerInterface {
   private int peerID;
   // The total amount of money in the peer's account
   private double accountStatement;
+  // Hashtable for storing messages
+  private Hashtable<String, ArrayList<Double>> messages = new Hashtable<String, ArrayList<Double>>();
 
   public Peer(int theID, double initialAmount) {
     peerID = theID;
     accountStatement = initialAmount;
+
+    for (int i = 0; i < allPeerIPs.length; i++){
+      if (i != peerID){
+        String dict_key = Integer.toString(peerID) + Integer.toString(i);
+        ArrayList<Double> newList = new ArrayList<>();
+        messages.put(dict_key,newList);
+      }
+    }
   }
 
   // You can use this to test out your connections
