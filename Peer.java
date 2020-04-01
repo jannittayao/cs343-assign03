@@ -68,7 +68,7 @@ public class Peer implements PeerInterface {
       while(!theInput.equals("q")){
         // Pick a peer at random
         if (theInput.equals("snap")){
-          // take a snapshot 
+          // take a snapshot
         }
         else{
         int randIndex = theRandNumber.nextInt(allPeerIPs.length);
@@ -85,9 +85,12 @@ public class Peer implements PeerInterface {
         pool.execute(new TransferTransaction(obj, theIP, amount));
 
         }
-     
-        theInput = in. nextLine();
+
+        theInput = in.nextLine();
       }
+
+      in.close(); //closes scanner once user enters 'q'
+
     } catch (Exception e) {
         System.err.println("Peer exception: " + e.toString());
         e.printStackTrace();
