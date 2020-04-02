@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.Hashtable;
 
 // This is the main Peer class, which contains all the logic for an independent VM
 public class Peer implements PeerInterface {
