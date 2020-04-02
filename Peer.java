@@ -17,6 +17,8 @@ public class Peer implements PeerInterface {
   private Boolean recordMessages;
   // Counter that counts how many peers the node has received markers from
   private int receivedMarkers;
+  // Boolean array that keeps track of markers sent along channels
+  private Boolean[] sentMarkers;
   // Hashtable that stores channels
   private Hashtable<String, Queue<Double>> channels;
   // Two separate Hashtables for storing instance and channel states
@@ -28,6 +30,11 @@ public class Peer implements PeerInterface {
     accountStatement = initialAmount;
     recordMessages = false;
     receivedMarkers = 0;
+    sentMarkers = new Boolean[allPeerIPs.length];
+    // populate sentMarkers with all false
+    for (int i = 0; i < allPeerIPs.length; i++){
+      sentMarkers[i] = false;
+    }
     channels = new Hashtable<String, Queue<Double>>();
     instance_state_dict = new Hashtable<String, Double>();
     channel_state_dict = new Hashtable<String, Queue<Double>>();
@@ -50,6 +57,49 @@ public class Peer implements PeerInterface {
     }
     catch(Exception e){
       System.err.println("Thread exception: " + e.toString());
+      e.printStackTrace();
+    }
+  }
+
+  // The remote method used to receive a marker
+  public void getMarker(int origin, Peer sendingPeer){
+      try{
+        ExecutorService pool = Executors.newFixedThreadPool(10);
+        pool.execute(new MarkerReceive(origin, sendingPeer, this));
+
+      } catch(Exception e){
+        System.err.println("getMarker exception: " + e.toString());
+        e.printStackTrace();
+      }
+}
+
+  // Method used to send a marker
+  public void sendMarker(int origin, Peer sendingPeer){
+    try{
+      String currentPeerID = Integer.toString(sendingPeer.peerID);
+      double currentState = sendingPeer.accountStatement;
+      // 1) Process records its state and then turns on record
+      sendingPeer.instance_state_dict.put(currentPeerID, currentState);
+      sendingPeer.recordMessages = true;
+
+      // 2) For each outgoing channel in which a marker has not been sent,
+      //    i sends a marker along c before i sends further messages along c.
+      for (int i = 0; i < sendingPeer.sentMarkers.length; i++){
+        if ((sendingPeer.sentMarkers[i] == false) && (i != sendingPeer.peerID)){
+          // Get stub of destination peer
+          String destinationIP = allPeerIPs[i];
+          Registry registry = LocateRegistry.getRegistry(destinationIP);
+          PeerInterface peerStub = (PeerInterface) registry.lookup("StarterCode");
+
+          // Call receiveMarker method of each receiving peer
+          System.err.println("Sending marker to peer " + Integer.toString(i));
+          peerStub.getMarker(origin, sendingPeer);
+          // Set peer to true
+          sendingPeer.sentMarkers[i] = true;
+        }
+      }
+    } catch (Exception e){
+      System.err.println("Marker sending exception: " + e.toString());
       e.printStackTrace();
     }
   }
@@ -84,7 +134,11 @@ public class Peer implements PeerInterface {
 
         if (theInput.equals("snap")){
           // take a snapshot
+          obj.sendMarker(obj.peerID, obj);
+
         }
+
+        // make a transaction
         else{
         // Pick a peer at random
         int randIndex = theRandNumber.nextInt(allPeerIPs.length);
@@ -114,6 +168,34 @@ public class Peer implements PeerInterface {
         e.printStackTrace();
     }
   }
+
+  // The helper class to multi-thread marker receiving process
+  private static class MarkerReceive implements Runnable{
+    // ID of snapshot requestor
+    int originalPeerID;
+    // Peer object sending the marker
+    Peer sendingPeer;
+    // Peer object receiving the marker
+    Peer receivingPeer;
+
+    MarkerReceive(int origin, Peer sender, Peer receiver){
+      originalPeerID = origin;
+      sendingPeer = sender;
+      receivingPeer = receiver;
+    }
+
+    @Override
+    public void run() {
+      try{
+        System.out.println("hello");
+
+      } catch (Exception e){
+        System.err.println("Marker receiving exception: " + e.toString());
+        e.printStackTrace();
+      }
+  }
+
+}
 
   // The helper class to multi-thread the transfer process
   private static class TransferTransaction implements Runnable {
