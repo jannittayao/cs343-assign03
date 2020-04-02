@@ -20,10 +20,10 @@ public class Peer implements PeerInterface {
   // Boolean array that keeps track of markers sent along channels
   private Boolean[] sentMarkers;
   // Hashtable that stores channels
-  private Hashtable<String, Queue<Double>> channels;
+  private Hashtable<String, LinkedList<Double>> channels;
   // Two separate Hashtables for storing instance and channel states
   private Hashtable<String, Double> instance_state_dict;
-  private Hashtable<String, Queue<Double>> channel_state_dict;
+  private Hashtable<String, LinkedList<Double>> channel_state_dict;
 
   public Peer(int theID, double initialAmount) {
     peerID = theID;
@@ -35,9 +35,9 @@ public class Peer implements PeerInterface {
     for (int i = 0; i < allPeerIPs.length; i++){
       sentMarkers[i] = false;
     }
-    channels = new Hashtable<String, Queue<Double>>();
+    channels = new Hashtable<String, LinkedList<Double>>();
     instance_state_dict = new Hashtable<String, Double>();
-    channel_state_dict = new Hashtable<String, Queue<Double>>();
+    channel_state_dict = new Hashtable<String, LinkedList<Double>>();
   }
 
   // You can use this to test out your connections
@@ -46,11 +46,29 @@ public class Peer implements PeerInterface {
   }
 
   // The remote method used to commit a transfer
-  public void getTransfer(double amount){
+  public void getTransfer(double amount, Peer sendingPeer){
     try{
+      // Check if recording messages and start recording if so
+      if (this.recordMessages = true){
+        String channelName = (Integer.toString(sendingPeer.peerID) +
+                              Integer.toString(this.peerID));
+        if (this.channel_state_dict.containsKey(channelName)){
+          LinkedList<Double> messages = this.channel_state_dict.get(channelName);
+          messages.add(amount);
+          this.channel_state_dict.replace(channelName, messages);
+        }
+        else {
+          LinkedList<Double> messages = new LinkedList<Double>();
+          messages.add(amount);
+          this.channel_state_dict.put(channelName, messages);
+        }
+      }
+
       System.err.println("Peer number " + this.peerID + " received an amount of "+ amount);
 
       accountStatement += amount;
+
+
       //Thread.sleep(5000);
 
       System.err.println("Peer number " + this.peerID + " has a total of "+ accountStatement);
@@ -177,24 +195,53 @@ public class Peer implements PeerInterface {
     Peer sendingPeer;
     // Peer object receiving the marker
     Peer receivingPeer;
+    // Hashtables storing instance and channel states of receiving peer
+    Hashtable<String,Double> receiver_instances;
+    Hashtable<String,LinkedList<Double>> receiver_channels;
 
     MarkerReceive(int origin, Peer sender, Peer receiver){
       originalPeerID = origin;
       sendingPeer = sender;
       receivingPeer = receiver;
+      // Update receiving peer hashtable
+      receivingPeer.instance_state_dict = sendingPeer.instance_state_dict;
+      receivingPeer.channel_state_dict = sendingPeer.channel_state_dict;
+      receiver_instances = receivingPeer.instance_state_dict;
+      receiver_channels = receivingPeer.channel_state_dict;
     }
 
     @Override
     public void run() {
       try{
-        System.out.println("hello");
+        receivingPeer.receivedMarkers++;
+        String channelName = (Integer.toString(sendingPeer.peerID) +
+                              Integer.toString(receivingPeer.peerID));
+        // If process has not recorded its state
+        if (!receiver_instances.containsKey(Integer.toString(receivingPeer.peerID))){
+          // 1) Record the channel state as the empty set
+          LinkedList<Double> emptySet = new LinkedList<Double>();
+          receiver_channels.put(channelName, emptySet);
+
+          // 2) Follow marker sending rule
+          receivingPeer.sendMarker(originalPeerID, receivingPeer);
+        } // Else if the process has already recorded its state
+        else{
+          // 1) Record state of channel as state of messages received along c
+          LinkedList<Double> messages = receivingPeer.channels.get(channelName);
+          receiver_channels.put(channelName, messages);
+        }
+
+        // Check to see if Chandy-Lampert terminates
+        if ((receivingPeer.receivedMarkers == receivingPeer.allPeerIPs.length - 1)
+             && (originalPeerID == receivingPeer.peerID)){
+               System.err.println("Replace later but it terminates :) ");
+             }
 
       } catch (Exception e){
         System.err.println("Marker receiving exception: " + e.toString());
         e.printStackTrace();
       }
   }
-
 }
 
   // The helper class to multi-thread the transfer process
@@ -226,7 +273,7 @@ public class Peer implements PeerInterface {
 
           System.err.println("Sending "+transferAmount+" to peer at IP "+ destinationIP);
           // The transfer being committed
-          peerStub.getTransfer(transferAmount);
+          peerStub.getTransfer(transferAmount, sendingPeer);
           // Withdraw the amount from the sending account
           sendingPeer.accountStatement -= transferAmount;
 
