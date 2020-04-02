@@ -13,20 +13,24 @@ public class Peer implements PeerInterface {
   private int peerID;
   // The total amount of money in the peer's account
   private double accountStatement;
-  // Hashtable for storing messages
-  private Hashtable<String, ArrayList<Double>> messages = new Hashtable<String, ArrayList<Double>>();
+  // Boolean that tells the node whether to start recording
+  private Boolean recordMessages;
+  // Counter that counts how many peers the node has received markers from
+  private int receivedMarkers;
+  // Hashtable that stores channels
+  private Hashtable<String, Queue<Double>> channels;
+  // Two separate Hashtables for storing instance and channel states
+  private Hashtable<String, Double> instance_state_dict;
+  private Hashtable<String, Queue<Double>> channel_state_dict;
 
   public Peer(int theID, double initialAmount) {
     peerID = theID;
     accountStatement = initialAmount;
-
-    for (int i = 0; i < allPeerIPs.length; i++){
-      if (i != peerID){
-        String dict_key = Integer.toString(peerID) + Integer.toString(i);
-        ArrayList<Double> newList = new ArrayList<>();
-        messages.put(dict_key,newList);
-      }
-    }
+    recordMessages = false;
+    receivedMarkers = 0;
+    channels = new Hashtable<String, Queue<Double>>();
+    instance_state_dict = new Hashtable<String, Double>();
+    channel_state_dict = new Hashtable<String, Queue<Double>>();
   }
 
   // You can use this to test out your connections
@@ -132,6 +136,7 @@ public class Peer implements PeerInterface {
           // Get the stub of the destination peer
           Registry registry = LocateRegistry.getRegistry(destinationIP);
           PeerInterface peerStub = (PeerInterface) registry.lookup("StarterCode");
+
 
           // To add a but of realistc delay
           // You can remove this
