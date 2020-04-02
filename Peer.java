@@ -56,7 +56,7 @@ public class Peer implements PeerInterface {
         if (this.channel_state_dict.containsKey(channelName)){
           LinkedList<Double> messages = this.channel_state_dict.get(channelName);
           messages.add(amount);
-          this.channel_state_dict.replace(channelName, messages);
+          this.channel_state_dict.put(channelName, messages);
         }
         else {
           LinkedList<Double> messages = new LinkedList<Double>();
