@@ -95,7 +95,7 @@ public class Peer implements PeerInterface {
       try{
         ExecutorService pool = Executors.newFixedThreadPool(10);
         System.err.println("Receiving marker from " + Integer.toString(sendingPeerID));
-        // pool.execute(new MarkerReceive(origin, sendingPeerID, this));
+        pool.execute(new MarkerReceive(origin, sendingPeerID, this));
 
       } catch(Exception e){
         System.err.println("getMarker exception: " + e.toString());
@@ -211,31 +211,31 @@ public class Peer implements PeerInterface {
     Hashtable<String,LinkedList<Double>> receiver_channels;
 
     MarkerReceive(int origin, int sender, Peer receiver){
-      try{
       originalPeerID = origin;
       sendingPeerID = sender;
       receivingPeer = receiver;
-      // Update receiving peer hashtable
-      Registry registry = LocateRegistry.getRegistry(allPeerIPs[sendingPeerID]);
-      PeerInterface peerStub = (PeerInterface) registry.lookup("StarterCode");
-
-      receivingPeer.instance_state_dict = peerStub.getInstances();
-      receivingPeer.channel_state_dict = peerStub.getChannels();
-      receiver_instances = receivingPeer.instance_state_dict;
-      receiver_channels = receivingPeer.channel_state_dict;
-    } catch(Exception e) {
-      System.err.println("Error creating marker receive class: " + e);
-    }
     }
 
     @Override
     public void run() {
       try{
+        // Update receiving peer hashtable
+        Registry registry = LocateRegistry.getRegistry(allPeerIPs[sendingPeerID]);
+        PeerInterface peerStub = (PeerInterface) registry.lookup("StarterCode");
+
+        receivingPeer.instance_state_dict = peerStub.getInstances();
+        receivingPeer.channel_state_dict = peerStub.getChannels();
+        receiver_instances = receivingPeer.instance_state_dict;
+        receiver_channels = receivingPeer.channel_state_dict;
+
+        System.err.println("Created receive marker object");
+
         receivingPeer.receivedMarkers++;
         String channelName = (Integer.toString(sendingPeerID) +
                               Integer.toString(receivingPeer.peerID));
         // If process has not recorded its state
         if (!receiver_instances.containsKey(Integer.toString(receivingPeer.peerID))){
+          System.err.println("Record channel state as empty set");
           // 1) Record the channel state as the empty set
           LinkedList<Double> emptySet = new LinkedList<Double>();
           receiver_channels.put(channelName, emptySet);
@@ -244,6 +244,7 @@ public class Peer implements PeerInterface {
           receivingPeer.sendMarker(originalPeerID);
         } // Else if the process has already recorded its state
         else{
+          System.err.println("Record state of channel as c");
           // 1) Record state of channel as state of messages received along c
           LinkedList<Double> messages = receivingPeer.channels.get(channelName);
           receiver_channels.put(channelName, messages);
