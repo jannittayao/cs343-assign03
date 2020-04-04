@@ -47,11 +47,11 @@ public class Peer implements PeerInterface {
   }
 
   // The remote method used to commit a transfer
-  public void getTransfer(double amount, Peer sendingPeer){
+  public void getTransfer(double amount, int sendingPeerID){
     try{
       // Check if recording messages and start recording if so
       if (this.recordMessages = true){
-        String channelName = (Integer.toString(sendingPeer.peerID) +
+        String channelName = (Integer.toString(sendingPeerID) +
                               Integer.toString(this.peerID));
         if (this.channel_state_dict.containsKey(channelName)){
           LinkedList<Double> messages = this.channels.get(channelName);
@@ -253,11 +253,14 @@ public class Peer implements PeerInterface {
       double transferAmount;
       // The peer object making the transfer
       Peer sendingPeer;
+      // Sending peer ID
+      int sendingPeerID;
 
       TransferTransaction(Peer obj, String toWhom, double amount) {
           this.destinationIP = toWhom;
           this.transferAmount = amount;
           sendingPeer = obj;
+          sendingPeerID = obj.peerID;
       }
 
       @Override
@@ -274,7 +277,7 @@ public class Peer implements PeerInterface {
 
           System.err.println("Sending "+transferAmount+" to peer at IP "+ destinationIP);
           // The transfer being committed
-          peerStub.getTransfer(transferAmount, this.sendingPeer);
+          peerStub.getTransfer(transferAmount, sendingPeerID);
           // Withdraw the amount from the sending account
           sendingPeer.accountStatement -= transferAmount;
 
