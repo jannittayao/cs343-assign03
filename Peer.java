@@ -46,6 +46,16 @@ public class Peer implements PeerInterface {
     System.out.println("Peer " + peerID + " is saying hello.");
   }
 
+  // Getter method for instance state
+  public Hashtable<String, Double> getInstances(){
+    return instance_state_dict;
+  }
+
+  // Getter method for channel state
+  public Hashtable<String, LinkedList<Double>> getChannels(){
+    return channel_state_dict;
+  }
+
   // The remote method used to commit a transfer
   public void getTransfer(double amount, int sendingPeerID){
     try{
@@ -81,10 +91,11 @@ public class Peer implements PeerInterface {
   }
 
   // The remote method used to receive a marker
-  public void getMarker(int origin, Peer sendingPeer){
+  public void getMarker(int origin, int sendingPeerID){
       try{
         ExecutorService pool = Executors.newFixedThreadPool(10);
-        pool.execute(new MarkerReceive(origin, sendingPeer, this));
+        System.err.println("Receiving marker from " + Integer.toString(sendingPeerID));
+        // pool.execute(new MarkerReceive(origin, sendingPeerID, this));
 
       } catch(Exception e){
         System.err.println("getMarker exception: " + e.toString());
@@ -112,7 +123,7 @@ public class Peer implements PeerInterface {
 
           // Call receiveMarker method of each receiving peer
           System.err.println("Sending marker to peer " + Integer.toString(i));
-          // peerStub.getMarker(origin, sendingPeer);
+          peerStub.getMarker(origin, this.peerID);
           // Set peer to true
           this.sentMarkers[i] = true;
         }
@@ -192,29 +203,36 @@ public class Peer implements PeerInterface {
     // ID of snapshot requestor
     int originalPeerID;
     // Peer object sending the marker
-    Peer sendingPeer;
+    int sendingPeerID;
     // Peer object receiving the marker
     Peer receivingPeer;
     // Hashtables storing instance and channel states of receiving peer
     Hashtable<String,Double> receiver_instances;
     Hashtable<String,LinkedList<Double>> receiver_channels;
 
-    MarkerReceive(int origin, Peer sender, Peer receiver){
+    MarkerReceive(int origin, int sender, Peer receiver){
+      try{
       originalPeerID = origin;
-      sendingPeer = sender;
+      sendingPeerID = sender;
       receivingPeer = receiver;
       // Update receiving peer hashtable
-      receivingPeer.instance_state_dict = sendingPeer.instance_state_dict;
-      receivingPeer.channel_state_dict = sendingPeer.channel_state_dict;
+      Registry registry = LocateRegistry.getRegistry(allPeerIPs[sendingPeerID]);
+      PeerInterface peerStub = (PeerInterface) registry.lookup("StarterCode");
+
+      receivingPeer.instance_state_dict = peerStub.getInstances();
+      receivingPeer.channel_state_dict = peerStub.getChannels();
       receiver_instances = receivingPeer.instance_state_dict;
       receiver_channels = receivingPeer.channel_state_dict;
+    } catch(Exception e) {
+      System.err.println("Error creating marker receive class: " + e);
+    }
     }
 
     @Override
     public void run() {
       try{
         receivingPeer.receivedMarkers++;
-        String channelName = (Integer.toString(sendingPeer.peerID) +
+        String channelName = (Integer.toString(sendingPeerID) +
                               Integer.toString(receivingPeer.peerID));
         // If process has not recorded its state
         if (!receiver_instances.containsKey(Integer.toString(receivingPeer.peerID))){
