@@ -248,6 +248,7 @@ public class Peer implements PeerInterface {
           System.err.println("Record state of channel as c");
           // 1) Record state of channel as state of messages received along c
           LinkedList<Double> messages = receivingPeer.channels.get(channelName);
+          System.err.println("messages in channel " + channelName + ": " + messages.toString());
           receiver_channels.put(channelName, messages);
         }
 
