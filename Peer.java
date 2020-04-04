@@ -93,18 +93,18 @@ public class Peer implements PeerInterface {
 }
 
   // Method used to send a marker
-  public void sendMarker(int origin, Peer sendingPeer){
+  public void sendMarker(int origin){
     try{
-      String currentPeerID = Integer.toString(sendingPeer.peerID);
-      double currentState = sendingPeer.accountStatement;
+      String currentPeerID = Integer.toString(this.peerID);
+      double currentState = this.accountStatement;
       // 1) Process records its state and then turns on record
-      sendingPeer.instance_state_dict.put(currentPeerID, currentState);
-      sendingPeer.recordMessages = true;
+      this.instance_state_dict.put(currentPeerID, currentState);
+      this.recordMessages = true;
 
       // 2) For each outgoing channel in which a marker has not been sent,
       //    i sends a marker along c before i sends further messages along c.
-      for (int i = 0; i < sendingPeer.sentMarkers.length; i++){
-        if ((sendingPeer.sentMarkers[i] == false) && (i != sendingPeer.peerID)){
+      for (int i = 0; i < this.sentMarkers.length; i++){
+        if ((this.sentMarkers[i] == false) && (i != this.peerID)){
           // Get stub of destination peer
           String destinationIP = allPeerIPs[i];
           Registry registry = LocateRegistry.getRegistry(destinationIP);
@@ -112,9 +112,9 @@ public class Peer implements PeerInterface {
 
           // Call receiveMarker method of each receiving peer
           System.err.println("Sending marker to peer " + Integer.toString(i));
-          peerStub.getMarker(origin, sendingPeer);
+          // peerStub.getMarker(origin, sendingPeer);
           // Set peer to true
-          sendingPeer.sentMarkers[i] = true;
+          this.sentMarkers[i] = true;
         }
       }
     } catch (Exception e){
@@ -153,8 +153,7 @@ public class Peer implements PeerInterface {
 
         if (theInput.equals("snap")){
           // take a snapshot
-          obj.sendMarker(obj.peerID, obj);
-
+          obj.sendMarker(obj.peerID);
         }
 
         // make a transaction
@@ -224,7 +223,7 @@ public class Peer implements PeerInterface {
           receiver_channels.put(channelName, emptySet);
 
           // 2) Follow marker sending rule
-          receivingPeer.sendMarker(originalPeerID, receivingPeer);
+          receivingPeer.sendMarker(originalPeerID);
         } // Else if the process has already recorded its state
         else{
           // 1) Record state of channel as state of messages received along c
