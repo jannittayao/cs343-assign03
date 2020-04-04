@@ -80,7 +80,7 @@ public class Peer implements PeerInterface {
       accountStatement += amount;
 
 
-      //Thread.sleep(5000);
+      Thread.sleep(5000);
 
       System.err.println("Peer number " + this.peerID + " has a total of "+ accountStatement);
     }
@@ -229,6 +229,8 @@ public class Peer implements PeerInterface {
         receiver_instances = receivingPeer.instance_state_dict;
         receiver_channels = receivingPeer.channel_state_dict;
 
+        Thread.currentThread().sleep((int)Math.random()*10000);
+
         System.err.println("Created receive marker object");
 
         receivingPeer.receivedMarkers++;
@@ -259,7 +261,10 @@ public class Peer implements PeerInterface {
         // Check to see if Chandy-Lampert terminates
         if ((receivingPeer.receivedMarkers == receivingPeer.allPeerIPs.length - 1)
              && (originalPeerID == receivingPeer.peerID)){
-               System.err.println("Replace later but it terminates :) ");
+
+               System.err.println("------- Replace later but it terminates :) -------");
+               System.err.println("Instances: " + receiver_instances.toString());
+               System.err.println("Channels: " + receiver_channels.toString());
              }
 
       } catch (Exception e){
