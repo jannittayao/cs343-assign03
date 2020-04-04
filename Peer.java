@@ -9,7 +9,7 @@ import java.util.Hashtable;
 // This is the main Peer class, which contains all the logic for an independent VM
 public class Peer implements PeerInterface {
   // [IMPORTANT] You must add the list of VM IPs before running the code
-  static String[] allPeerIPs = new String[]{"34.201.107.71", "34.226.203.75", "34.201.252.42"};
+  static String[] allPeerIPs = new String[]{"52.207.214.164", "3.89.144.2"};
   // Starts with 0, and is mainly used to ensure that the node doesn't send money to itself
   private int peerID;
   // The total amount of money in the peer's account
@@ -54,14 +54,14 @@ public class Peer implements PeerInterface {
         String channelName = (Integer.toString(sendingPeer.peerID) +
                               Integer.toString(this.peerID));
         if (this.channel_state_dict.containsKey(channelName)){
-          LinkedList<Double> messages = this.channel_state_dict.get(channelName);
+          LinkedList<Double> messages = this.channels.get(channelName);
           messages.add(amount);
-          this.channel_state_dict.put(channelName, messages);
+          this.channels.put(channelName, messages);
         }
         else {
           LinkedList<Double> messages = new LinkedList<Double>();
           messages.add(amount);
-          this.channel_state_dict.put(channelName, messages);
+          this.channels.put(channelName, messages);
         }
       }
 
