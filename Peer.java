@@ -123,9 +123,10 @@ public class Peer implements PeerInterface {
 
           // Call receiveMarker method of each receiving peer
           System.err.println("Sending marker to peer " + Integer.toString(i));
+          this.sentMarkers[i] = true;
           peerStub.getMarker(origin, this.peerID);
           // Set peer to true
-          this.sentMarkers[i] = true;
+
         }
       }
     } catch (Exception e){
