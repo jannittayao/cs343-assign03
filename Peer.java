@@ -105,7 +105,8 @@ public class Peer implements PeerInterface {
 
   // Method used to send a marker
   public void sendMarker(int origin){
-    try{
+    synchronized(this){
+      try{
       String currentPeerID = Integer.toString(this.peerID);
       double currentState = this.accountStatement;
       // 1) Process records its state and then turns on record
@@ -133,6 +134,7 @@ public class Peer implements PeerInterface {
       System.err.println("Marker sending exception: " + e.toString());
       e.printStackTrace();
     }
+   }
   }
 
   public static void main(String args[]) {
