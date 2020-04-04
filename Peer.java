@@ -274,7 +274,7 @@ public class Peer implements PeerInterface {
 
           System.err.println("Sending "+transferAmount+" to peer at IP "+ destinationIP);
           // The transfer being committed
-          peerStub.getTransfer(transferAmount, sendingPeer);
+          peerStub.getTransfer(transferAmount, this.sendingPeer);
           // Withdraw the amount from the sending account
           sendingPeer.accountStatement -= transferAmount;
 
