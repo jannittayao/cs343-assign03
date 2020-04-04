@@ -247,9 +247,13 @@ public class Peer implements PeerInterface {
         else{
           System.err.println("Record state of channel as c");
           // 1) Record state of channel as state of messages received along c
-          LinkedList<Double> messages = receivingPeer.channels.get(channelName);
-          System.err.println("messages in channel " + channelName + ": " + messages.toString());
-          receiver_channels.put(channelName, messages);
+          if (receivingPeer.channels.containsKey(channelName)){
+            LinkedList<Double> messages = receivingPeer.channels.get(channelName);
+            receiver_channels.put(channelName, messages);
+          } else {
+            LinkedList<Double> messages = new LinkedList<Double>();
+            receiver_channels.put(channelName, messages);
+          }
         }
 
         // Check to see if Chandy-Lampert terminates
