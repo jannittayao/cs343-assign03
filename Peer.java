@@ -139,6 +139,7 @@ public class Peer implements PeerInterface {
       System.err.println("------------Snapshot------------");
       System.err.println("Peer accounts: " + this.instance_state_dict.toString());
       System.err.println("Channels: " + this.channel_state_dict.toString());
+      System.err.println("--------------------------------");
 
       // reset everything
       for (int i = 0; i < this.allPeerIPs.length; i++){
