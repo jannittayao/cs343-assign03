@@ -9,4 +9,6 @@ public interface PeerInterface extends Remote {
     void sendMarker(int origin) throws RemoteException;
     Hashtable<String, Double> getInstances() throws RemoteException;
     Hashtable<String, LinkedList<Double>> getChannels() throws RemoteException;
+    void printSnapshot() throws RemoteException;
+    void snapshotReset() throws RemoteException;
 }

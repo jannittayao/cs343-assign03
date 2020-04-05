@@ -124,9 +124,9 @@ public class Peer implements PeerInterface {
 
           // Call receiveMarker method of each receiving peer
           System.err.println("Sending marker to peer " + Integer.toString(i));
-          this.sentMarkers[i] = true;
+          this.sentMarkers[i] = true; //set peer to true
           peerStub.getMarker(origin, this.peerID);
-          // Set peer to true
+
 
         }
       }
@@ -135,6 +135,44 @@ public class Peer implements PeerInterface {
       e.printStackTrace();
     }
    }
+  }
+
+  public void printSnapshot(){
+    try{
+      System.err.println("------------Snapshot------------");
+      System.err.println("Peer accounts: " + this.instance_state_dict.toString());
+      System.err.println("Channels: " + this.channel_state_dict.toString());
+
+      // reset everything
+      for (int i = 0; i < this.allPeerIPs.length; i++){
+          // Get stub of destination peer
+          String destinationIP = allPeerIPs[i];
+          Registry registry = LocateRegistry.getRegistry(destinationIP);
+          PeerInterface peerStub = (PeerInterface) registry.lookup("StarterCode");
+
+          peerStub.snapshotReset();
+      }
+    } catch (Exception e){
+      System.err.println("Print snapshot exception: " + e.toString());
+    }
+  }
+
+  public void snapshotReset(){
+    try{
+      recordMessages = false;
+      receivedMarkers = 0;
+      sentMarkers = new Boolean[allPeerIPs.length];
+      // populate sentMarkers with all false
+      for (int i = 0; i < allPeerIPs.length; i++){
+        sentMarkers[i] = false;
+      }
+      channels = new Hashtable<String, LinkedList<Double>>();
+      instance_state_dict = new Hashtable<String, Double>();
+      channel_state_dict = new Hashtable<String, LinkedList<Double>>();
+    }
+    catch(Exception e) {
+      System.err.println("Snapshot reset exception: " + e.toString());
+    }
   }
 
   public static void main(String args[]) {
@@ -264,9 +302,8 @@ public class Peer implements PeerInterface {
         if ((receivingPeer.receivedMarkers == receivingPeer.allPeerIPs.length - 1)
              && (originalPeerID == receivingPeer.peerID)){
 
-               System.err.println("------- Replace later but it terminates :) -------");
-               System.err.println("Instances: " + receiver_instances.toString());
-               System.err.println("Channels: " + receiver_channels.toString());
+               System.err.println("call printSnapshot method");
+               receivingPeer.printSnapshot();
              }
 
       } catch (Exception e){
