@@ -76,9 +76,7 @@ public class Peer implements PeerInterface {
       }
 
       System.err.println("Peer number " + this.peerID + " received an amount of "+ amount);
-
       accountStatement += amount;
-
 
       Thread.sleep(5000);
 
@@ -94,7 +92,6 @@ public class Peer implements PeerInterface {
   public void getMarker(int origin, int sendingPeerID){
       try{
         ExecutorService pool = Executors.newFixedThreadPool(10);
-        System.err.println("Receiving marker from " + Integer.toString(sendingPeerID));
         pool.execute(new MarkerReceive(origin, sendingPeerID, this));
 
       } catch(Exception e){
@@ -223,14 +220,10 @@ public class Peer implements PeerInterface {
         // Schedule the payment transaction
         ExecutorService pool = Executors.newFixedThreadPool(10);
         pool.execute(new TransferTransaction(obj, theIP, amount));
-
         }
-
         theInput = in.nextLine();
       }
-
       System.exit(0);
-
 
 
     } catch (Exception e) {
@@ -269,16 +262,14 @@ public class Peer implements PeerInterface {
         receiver_instances = receivingPeer.instance_state_dict;
         receiver_channels = receivingPeer.channel_state_dict;
 
+        // Add realistic delay
         Thread.currentThread().sleep((int)Math.random()*10000);
-
-        System.err.println("Created receive marker object");
 
         receivingPeer.receivedMarkers++;
         String channelName = (Integer.toString(sendingPeerID) +
                               Integer.toString(receivingPeer.peerID));
         // If process has not recorded its state
         if (!receiver_instances.containsKey(Integer.toString(receivingPeer.peerID))){
-          System.err.println("Record channel state as empty set");
           // 1) Record the channel state as the empty set
           LinkedList<Double> emptySet = new LinkedList<Double>();
           receiver_channels.put(channelName, emptySet);
@@ -287,7 +278,6 @@ public class Peer implements PeerInterface {
           receivingPeer.sendMarker(originalPeerID);
         } // Else if the process has already recorded its state
         else{
-          System.err.println("Record state of channel as c");
           // 1) Record state of channel as state of messages received along c
           if (receivingPeer.channels.containsKey(channelName)){
             LinkedList<Double> messages = receivingPeer.channels.get(channelName);
@@ -301,8 +291,6 @@ public class Peer implements PeerInterface {
         // Check to see if Chandy-Lampert terminates
         if ((receivingPeer.receivedMarkers == receivingPeer.allPeerIPs.length - 1)
              && (originalPeerID == receivingPeer.peerID)){
-
-               System.err.println("call printSnapshot method");
                receivingPeer.printSnapshot();
              }
 
