@@ -61,7 +61,7 @@ public class Peer implements PeerInterface {
     try{
       // Check if recording messages and start recording if so
       if (this.recordMessages = true){
-        String channelName = (Integer.toString(sendingPeerID) +
+        String channelName = (Integer.toString(sendingPeerID) + " -> " +
                               Integer.toString(this.peerID));
         if (this.channel_state_dict.containsKey(channelName)){
           LinkedList<Double> messages = this.channels.get(channelName);
@@ -267,7 +267,7 @@ public class Peer implements PeerInterface {
         Thread.currentThread().sleep((int)Math.random()*10000);
 
         receivingPeer.receivedMarkers++;
-        String channelName = (Integer.toString(sendingPeerID) +
+        String channelName = (Integer.toString(sendingPeerID) + " -> " +
                               Integer.toString(receivingPeer.peerID));
         // If process has not recorded its state
         if (!receiver_instances.containsKey(Integer.toString(receivingPeer.peerID))){
